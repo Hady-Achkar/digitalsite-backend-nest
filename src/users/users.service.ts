@@ -1,37 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { User } from 'src/entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateUserInput } from './dto/create-user.input';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  findByEmail(email: string): Promise<User | undefined> {
-    return Promise.resolve(this.users.find((user) => user.email === email));
+  findByEmail(email: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { email } });
   }
 
-  async create(userData: Partial<User>): Promise<User> {
-    if (!userData.email) {
+  findById(id: number): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { id } });
+  }
+
+  async create(createUserInput: CreateUserInput): Promise<User> {
+    if (!createUserInput.email) {
       throw new Error('Email is required');
     }
 
     let hashedPassword: string | undefined;
-    if (userData.password && typeof userData.password === 'string') {
-      // Now userData.password is explicitly a string
-      if (typeof userData.password === 'string') {
-        hashedPassword = await bcrypt.hash(userData.password, 10);
-      }
+    if (createUserInput.password) {
+      hashedPassword = await bcrypt.hash(createUserInput.password, 10);
     }
 
-    const user: User = {
-      id: this.users.length + 1,
-      email: userData.email,
-      password: hashedPassword,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-    };
-
-    this.users.push(user);
-    return user;
+    return this.prisma.user.create({
+      data: {
+        email: createUserInput.email,
+        password: hashedPassword,
+        firstName: createUserInput.firstName,
+        lastName: createUserInput.lastName,
+      },
+    });
   }
 }

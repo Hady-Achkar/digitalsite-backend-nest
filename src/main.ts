@@ -13,7 +13,6 @@ async function bootstrap(): Promise<void> {
   const sessionSecret =
     configService.get<string>('SESSION_SECRET') || 'default_secret';
 
-  // With esModuleInterop enabled, these middleware functions are callable.
   app.use(helmet());
   app.use(cookieParser());
   app.use(

@@ -9,11 +9,11 @@ export class User {
   email: string;
 
   @Field({ nullable: true })
-  password?: string;
+  password?: string | null;
 
   @Field({ nullable: true })
-  firstName?: string;
+  firstName?: string | null;
 
   @Field({ nullable: true })
-  lastName?: string;
+  lastName?: string | null;
 }
